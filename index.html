@@ -495,13 +495,13 @@
         bottom: 45%;
         height: 30%;
         z-index: 2;
-        filter: saturate(0.62) brightness(0.85) blur(0.6px);
+        filter: saturate(0.5) brightness(0.72) blur(0.7px);
       }
       .jardin-medio {
         bottom: 20%;
         height: 35%;
         z-index: 3;
-        filter: saturate(0.86) brightness(0.88);
+        filter: saturate(0.7) brightness(0.78);
       }
       .jardin-suelo {
         position: absolute;
@@ -661,25 +661,120 @@
       }
       .tulipan .flor-grupo {
         transform-origin: 50% 100%;
-        filter: saturate(1.2) brightness(1.06);
+        filter: saturate(1.45) brightness(1.16)
+          drop-shadow(0 0 7px var(--brillo-flor, rgba(245, 197, 24, 0.45)));
       }
       .tulipan .petalo {
         transition: filter 0.4s ease;
       }
       .tulipan.abierto .flor-grupo {
-        filter: saturate(1.2) brightness(1.06)
-          drop-shadow(0 0 12px var(--brillo-flor, rgba(245, 197, 24, 0.7)));
+        filter: saturate(1.45) brightness(1.16)
+          drop-shadow(0 0 16px var(--brillo-flor, rgba(245, 197, 24, 0.75)));
         animation: none;
       }
       .tulipan:not(.abierto) .flor-grupo {
         animation: pulsoInvita 2.6s ease-in-out infinite;
       }
       .tulipan .anillo-brillo {
-        opacity: 0;
+        opacity: 0.4;
         transition: opacity 0.5s ease;
       }
       .tulipan.abierto .anillo-brillo {
         opacity: 1;
+      }
+      .tulipan-numero {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -55%);
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--fuente-display);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--morado-profundo);
+        background: var(--amarillo-suave);
+        box-shadow: 0 0 10px 2px rgba(245, 197, 24, 0.55);
+        z-index: 10;
+        pointer-events: none;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1.2),
+          opacity 0.4s ease,
+          background 0.3s ease;
+      }
+      .tulipan.abierto .tulipan-numero {
+        background: var(--crema);
+        transform: translate(-50%, -55%) scale(0.85);
+        box-shadow: 0 0 6px 1px rgba(245, 197, 24, 0.35);
+      }
+      .tulipan.bloqueado .flor-grupo {
+        filter: saturate(0.55) brightness(0.6);
+        animation: none;
+      }
+      .tulipan.bloqueado .anillo-brillo {
+        opacity: 0;
+      }
+      .tulipan.bloqueado .tulipan-numero {
+        background: transparent;
+        box-shadow: none;
+        color: var(--amarillo-palido);
+        opacity: 0.75;
+        width: 28px;
+        height: 28px;
+      }
+      .tulipan.bloqueado .tulipan-numero svg {
+        width: 100%;
+        height: 100%;
+      }
+      @keyframes tulipanNiega {
+        0%,
+        100% {
+          transform: translateX(-50%) rotate(var(--rot-brisa, 0deg));
+        }
+        20% {
+          transform: translateX(-50%) rotate(-6deg);
+        }
+        40% {
+          transform: translateX(-50%) rotate(6deg);
+        }
+        60% {
+          transform: translateX(-50%) rotate(-4deg);
+        }
+        80% {
+          transform: translateX(-50%) rotate(4deg);
+        }
+      }
+      .tulipan.negando {
+        animation: tulipanNiega 0.5s ease-in-out;
+      }
+      .toast-jardin {
+        position: fixed;
+        left: 50%;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+        transform: translate(-50%, 12px);
+        max-width: min(84vw, 320px);
+        text-align: center;
+        padding: 10px 18px;
+        border-radius: 20px;
+        background: rgba(46, 27, 54, 0.88);
+        border: 1px solid rgba(248, 216, 119, 0.35);
+        color: var(--amarillo-palido);
+        font-size: 0.85rem;
+        letter-spacing: 0.01em;
+        z-index: 28;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.4s ease,
+          transform 0.4s ease;
+      }
+      .toast-jardin.visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
       }
       .overlay {
         position: fixed;
@@ -967,11 +1062,11 @@
       <section class="scene activa" id="scene-bienvenida">
         <div class="contenido">
           <span class="sello"
-            >Cada tulipan tiene una nota con algo que me gusta de ti.<b
-              >1 de 1</b
-            >Picale a cada uno.</span
+            >Cada tulipan tiene una nota con algo muy especial de ti.<b
+              >Picale a cada flor.</b
+            ></span
           >
-          <h1 id="tituloBienvenida">Para ti</h1>
+          <h1 id="tituloBienvenida">Para tu</h1>
           <p class="sub" id="subBienvenida"></p>
           <button class="boton-principal" id="btnEntrar">Entrar</button>
         </div>
@@ -1251,11 +1346,13 @@
 
     <canvas id="dust-canvas" aria-hidden="true"></canvas>
     <p class="marca-agua-secreta" id="marcaSecreta"></p>
+    <p class="toast-jardin" id="toastJardin"></p>
 
     <script>
       const DATOS = {
         nombre: "Vanessa",
-        mensajeInicial: "Esto es solo tuyo. Con mucho cariño!",
+        mensajeInicial:
+          "Esto es solo tuyo. ¡Con mucho cariño!",
         neonInicial: "The one where i make you some flowers?",
         neonFinal: "The one where you got the flowers.",
         firma: "~R",
@@ -1315,7 +1412,7 @@
         seguimiento: {
           activo: true,
           urlContador: "https://roninrz.goatcounter.com/count",
-          ids: { k7x2: "vanessa", t3st: "roger" },
+          ids: { k7x2: "vanessa" },
         },
       };
 
@@ -1983,6 +2080,16 @@
         );
       }
 
+      function svgCandado() {
+        return (
+          '<svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect x="6" y="12" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/>' +
+          '<path d="M9,12 V8 a4,4 0 0 1 8,0 v4" fill="none" stroke="currentColor" stroke-width="2"/>' +
+          '<circle cx="13" cy="17" r="1.6" fill="currentColor"/>' +
+          "</svg>"
+        );
+      }
+
       function svgMariposa() {
         return (
           '<svg viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">' +
@@ -2396,8 +2503,9 @@
             ? "clamp(58px, 13vw, 92px)"
             : "clamp(82px, 18vw, 132px)";
           const abajoTulipan = esAtras ? "60%" : "16%";
+          const esFinal = i === total - 1;
           const wrap = document.createElement("div");
-          wrap.className = "tulipan";
+          wrap.className = "tulipan" + (esFinal ? " bloqueado" : "");
           wrap.dataset.index = i;
           wrap.style.setProperty("--brillo-flor", infoColor.brillo);
           wrap.style.left = x + "%";
@@ -2411,16 +2519,22 @@
             inclinacion,
             infoColor,
           );
+          const badge = document.createElement("div");
+          badge.className = "tulipan-numero";
+          badge.innerHTML = esFinal ? svgCandado() : String(i + 1);
+          wrap.appendChild(badge);
           cont.appendChild(wrap);
           const faseBase = Math.random() * Math.PI * 2;
           const velocidad = 0.5 + Math.random() * 0.4;
           const amplitud = 2.4 + Math.random() * 1.6;
           tulipanesEstado.push({
             el: wrap,
+            badge: badge,
             fase: faseBase,
             velocidad,
             amplitud,
             abierto: false,
+            esFinal: esFinal,
             nota: nota,
             color: infoColor,
           });
@@ -2524,12 +2638,31 @@
         paso();
       }
 
+      let toastTimeout = null;
+      function mostrarAvisoJardin(texto) {
+        const toast = document.getElementById("toastJardin");
+        toast.textContent = texto;
+        toast.classList.add("visible");
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove("visible");
+        }, 2200);
+      }
+
       function abrirNota(i) {
         const tul = tulipanesEstado[i];
         if (!tul) return;
+        if (tul.esFinal && abiertosCount < DATOS.notas.length - 1) {
+          tul.el.classList.remove("negando");
+          void tul.el.offsetWidth;
+          tul.el.classList.add("negando");
+          mostrarAvisoJardin("Faltan algunas flores por descubrir");
+          return;
+        }
         if (!tul.abierto) {
           tul.abierto = true;
           tul.el.classList.add("abierto");
+          tul.badge.textContent = "✓";
           abiertosCount++;
           sonidoFloreceCorta();
           registrarEvento("nota_abierta_" + (i + 1));
@@ -2541,6 +2674,15 @@
               "--progreso",
               (abiertosCount / DATOS.notas.length).toFixed(3),
             );
+          if (abiertosCount === DATOS.notas.length - 1) {
+            const tulFinal = tulipanesEstado[tulipanesEstado.length - 1];
+            if (tulFinal && tulFinal.esFinal && !tulFinal.abierto) {
+              tulFinal.el.classList.remove("bloqueado");
+              tulFinal.badge.textContent = String(
+                Number(tulFinal.el.dataset.index) + 1,
+              );
+            }
+          }
         }
         tarjetaEl.style.setProperty(
           "--rot",
